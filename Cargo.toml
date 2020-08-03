@@ -1,0 +1,16 @@
+[package]
+name = "textspan"
+version = "0.1.0"
+authors = ["Yohei Tamura <tamuhey@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+tokenizations = "^0.3" 
+
+[dev-dependencies]
+quickcheck = "0.9"                     # Automatic property based testing with shrinking.
+quickcheck_macros = "0.9"  
+proptest = "0.10" 
