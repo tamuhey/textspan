@@ -114,31 +114,49 @@ mod tests {
         }
     }
 
-    // fn cases_align_spans_by_mapping() -> impl Strategy<Value = (Vec<(usize, usize)>, Vec<usize>)> {
-    //     let mapping = pc::vec(0..4usize, 0..10000usize).prop_map(|v| {
-    //         v.iter()
-    //             .scan(0, |s, x| {
-    //                 *s += x;
-    //                 Some(*s)
-    //             })
-    //             .collect()
-    //     });
-    //     let span = prop::strategy::
-    // }
-    // prop_compose! {
-    //     // Generate arbitrary integers up to half the maximum desired value,
-    //     // then multiply them by 2, thus producing only even integers in the
-    //     // desired range.
-    //     fn even_integer(max: i32)(base in 0..max/2) -> i32 { base * 2 }
-    // }
-    // fn foo() -> impl Strategy<Value = usize> {
-    //     let v = even_integer(10);
-    //     (0..10).into()
-    // }
-    // proptest! {
-    //       #[test]
-    //       fn align_spans_by_mapping_proptest(v in pc::vec(0..3usize, 1..4usize)) {
-    //           sum(&v);
-    //       }
-    // }
+    fn cases_align_spans_by_mapping(
+        max_length: usize,
+    ) -> impl Strategy<Value = ((usize, usize), Vec<usize>)> {
+        pc::vec(0..4usize, 0..max_length)
+            .prop_map(|v| {
+                v.iter()
+                    .scan(0, |s, x| {
+                        *s += x;
+                        Some(*s)
+                    })
+                    .collect()
+            })
+            .prop_flat_map(|v: Vec<usize>| {
+                let l = v.len();
+                ((0..=l, 0..=l), Just(v))
+            })
+    }
+    fn check_align(span: Span, mapping: &[usize], ret: &[Span]) {
+        let (start, end) = span;
+        if start >= end {
+            assert_eq!(ret.len(), 0)
+        } else {
+            let rev = |x: usize| mapping.iter().position(|y| *y == x).unwrap();
+            let l = rev(ret[0].0);
+            assert_eq!(mapping[l], mapping[start]);
+            let mut r = rev(ret[0].1 - 1);
+            for i in 1..ret.len() {
+                assert_eq!(
+                    mapping[r],
+                    mapping[rev(ret[i].0) - 1],
+                    "connectivity\n\tret: {:?}\n",
+                    ret
+                );
+                r = rev(ret[i].1 - 1);
+            }
+            assert_eq!(mapping[end - 1], mapping[r]);
+        }
+    }
+    proptest! {
+          #[test]
+          fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(1000)) {
+              let ret = align_spans_by_mapping(&vec![span], &mapping);
+              check_align(span, &mapping, &ret);
+          }
+    }
 }
