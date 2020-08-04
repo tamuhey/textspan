@@ -4,14 +4,35 @@ extern crate quickcheck;
 #[cfg(test)]
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
+use std::borrow::Borrow;
+use std::convert::AsRef;
 
 pub type Span = (usize, usize);
+
+fn get_span_indices<S: Borrow<str>>(tokens: &[S]) -> Vec<Span> {
+    tokens
+        .iter()
+        .scan(0, |state, token| {
+            let l = *state;
+            let r = l + token.borrow().chars().count();
+            *state = r;
+            Some((l, r))
+        })
+        .collect()
+}
+
+pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> Vec<Vec<Span>> {
+    let spans = get_span_indices(tokens);
+    let text = tokens.join("");
+    align_spans(&spans, &text, original_text)
+}
+
 pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Vec<Span>> {
     let (mapping, _) = tokenizations::get_charmap(text, original_text);
     align_spans_by_mapping(spans, &mapping)
 }
 
-pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<Vec<Span>> {
+pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) -> Vec<Vec<Span>> {
     let mut ret = vec![];
     for &(start, end) in spans {
         let mut l = None;
@@ -19,7 +40,7 @@ pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<
         let mut prevy: Option<usize> = None;
         let mut pret = vec![];
         for i in start..end {
-            for &y in &mapping[i] {
+            for &y in mapping[i].as_ref() {
                 if prevy != None && prevy.unwrap() + 1 < y {
                     pret.push((l.unwrap(), r.unwrap()));
                     l = None;
@@ -228,5 +249,65 @@ mod tests {
               let ret = align_spans_by_mapping(&vec![span], &mapping);
               check_align(span, &mapping, &ret);
           }
+    }
+
+    #[quickcheck]
+    fn get_original_spans_for_clean_text_quickcheck(tokens: Vec<String>) -> bool {
+        let spans = get_span_indices(&tokens);
+        let output = get_original_spans(&tokens, &tokens.join(""))
+            .iter()
+            .scan(0, |s, x| {
+                if let Some(&p) = x.first() {
+                    *s = p.1;
+                    Some(p)
+                } else {
+                    Some((*s, *s))
+                }
+            })
+            .collect::<Vec<_>>();
+        spans == output
+    }
+
+    #[test]
+    fn get_original_spans_handmade() {
+        let testcases = vec![
+            (
+                (vec!["fあo①が", "bar"], "fあo1かbar"),
+                (vec![vec![(0, 5)], vec![(5, 8)]]),
+            ),
+            ((vec!["New York"], "NewYork"), (vec![vec![(0, 7)]])),
+            (
+                (vec!["A'B", "", ""], "A B"),
+                (vec![vec![(0, 1), (2, 3)], vec![], vec![]]),
+            ),
+            (
+                (vec!["A'b", ""], "a b"),
+                (vec![vec![(0, 1), (2, 3)], vec![]]),
+            ),
+            ((vec!["", "", ""], ""), (vec![vec![], vec![], vec![]])),
+            (
+                (vec!["hello", "``world``"], "Hello \"world\""),
+                vec![vec![(0, 5)], vec![(7, 12)]],
+            ),
+            (
+                (vec!["à", " ", "", "la", "gorge", ""], "a     lagorge"),
+                (vec![
+                    vec![(0, 1)],
+                    vec![(1, 2)],
+                    vec![],
+                    vec![(6, 8)],
+                    vec![(8, 13)],
+                    vec![],
+                ]),
+            ),
+        ];
+        for (input, expected) in testcases.into_iter() {
+            assert_eq!(
+                get_original_spans(&input.0, input.1),
+                expected,
+                "{:?}",
+                input
+            );
+        }
     }
 }
