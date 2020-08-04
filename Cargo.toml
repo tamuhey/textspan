@@ -15,7 +15,8 @@ documentation = "https://docs.rs/textspan"
 
 [dependencies]
 
-tokenizations = "^0.3" 
+# tokenizations = "^0.3" 
+tokenizations = {path="../tokenizations"}
 
 [dev-dependencies]
 quickcheck = "0.9"           

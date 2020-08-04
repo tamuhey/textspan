@@ -6,26 +6,9 @@ extern crate quickcheck;
 extern crate quickcheck_macros;
 
 pub type Span = (usize, usize);
-fn substr(text: &str, start: usize, end: usize) -> &str {
-    if start >= end {
-        return "";
-    }
-    let mut it = text.char_indices();
-    let l = it.nth(start).map(|(x, _)| x);
-    let r = it.nth(end - start - 1).map(|(x, _)| x);
-    match (l, r) {
-        (Some(l), Some(r)) => &text[l..r],
-        (Some(l), None) => &text[l..],
-        (None, _) => "",
-    }
-}
-
-pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Option<Span>> {
-    let span_texts: Vec<_> = spans
-        .iter()
-        .map(|&(start, end)| substr(text, start, end))
-        .collect();
-    tokenizations::get_original_spans(&span_texts, original_text)
+pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Vec<Span>> {
+    let (mapping, _) = tokenizations::get_charmap(text, original_text);
+    align_spans_by_mapping(spans, &mapping)
 }
 
 pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<Vec<Span>> {
@@ -64,6 +47,20 @@ mod tests {
     use proptest::collection as pc;
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
+    fn substr(text: &str, start: usize, end: usize) -> &str {
+        if start >= end {
+            return "";
+        }
+        let mut it = text.char_indices();
+        let l = it.nth(start).map(|(x, _)| x);
+        let r = it.nth(end - start - 1).map(|(x, _)| x);
+        match (l, r) {
+            (Some(l), Some(r)) => &text[l..r],
+            (Some(l), None) => &text[l..],
+            (None, _) => "",
+        }
+    }
+
     fn slow_substr(text: &str, start: usize, end: usize) -> String {
         if start >= end {
             "".to_owned()
@@ -105,9 +102,12 @@ mod tests {
     fn align_spans_handmade() {
         for (case, expected) in vec![
             ((vec![], "", ""), vec![]),
-            ((vec![(1, 4)], "foobar", "foo.bar"), vec![Some((1, 5))]),
-            ((vec![(0, 1)], "foo", "oo"), vec![None]),
-            ((vec![(0, 3)], "foo", "fo0o"), vec![Some((0, 4))]),
+            (
+                (vec![(1, 4)], "foobar", "foo.bar"),
+                vec![vec![(1, 3), (4, 5)]],
+            ),
+            ((vec![(0, 1)], "foo", "oo"), vec![vec![]]),
+            ((vec![(0, 3)], "foo", "fo0o"), vec![vec![(0, 2), (3, 4)]]),
         ]
         .iter()
         {
@@ -180,30 +180,10 @@ mod tests {
                 for (start, end) in spans {
                     if let Some(_cur) = cur {
                         assert!(start - _cur > 0);
-                        cur = Some(end);
                     }
                     cur = Some(end);
                 }
             }
-            assert!(
-                ret.iter()
-                    .scan(None, |s, spans| {
-                        let (start, end) = span;
-                        if let Some(ss) = s {
-                            let ret = start - *ss;
-                            *s = Some(end);
-                            Some(ret)
-                        } else {
-                            *s = Some(end);
-                            Some(100)
-                        }
-                    })
-                    .all(|x| x > 0),
-                "all ret spans are separated by more than 0
-                ret: {:?}
-                ",
-                ret
-            );
             let rev = |x: usize| mapping.iter().position(|y| y.contains(&x)).unwrap();
             let l = rev(ret[0][0].0);
             assert!(
