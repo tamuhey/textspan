@@ -39,8 +39,8 @@ pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) 
         let mut r = None;
         let mut prevy: Option<usize> = None;
         let mut pret = vec![];
-        for i in start..end {
-            for &y in mapping[i].as_ref() {
+        for item in mapping.iter().take(end).skip(start) {
+            for &y in item.as_ref() {
                 if prevy != None && prevy.unwrap() + 1 < y {
                     pret.push((l.unwrap(), r.unwrap()));
                     l = None;
