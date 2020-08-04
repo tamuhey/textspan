@@ -28,16 +28,17 @@ pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Optio
     tokenizations::get_original_spans(&span_texts, original_text)
 }
 
-pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<Span> {
+pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<Vec<Span>> {
     let mut ret = vec![];
     for &(start, end) in spans {
         let mut l = None;
         let mut r = None;
         let mut prevy: Option<usize> = None;
+        let mut pret = vec![];
         for i in start..end {
             for &y in &mapping[i] {
                 if prevy != None && prevy.unwrap() + 1 < y {
-                    ret.push((l.unwrap(), r.unwrap()));
+                    pret.push((l.unwrap(), r.unwrap()));
                     l = None;
                 } else {
                     r = Some(y + 1);
@@ -50,8 +51,9 @@ pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<
             }
         }
         if let Some(l) = l {
-            ret.push((l, r.unwrap()));
+            pret.push((l, r.unwrap()));
         }
+        ret.push(pret)
     }
     ret
 }
@@ -100,6 +102,21 @@ mod tests {
     }
 
     #[test]
+    fn align_spans_handmade() {
+        for (case, expected) in vec![
+            ((vec![], "", ""), vec![]),
+            ((vec![(1, 4)], "foobar", "foo.bar"), vec![Some((1, 5))]),
+            ((vec![(0, 1)], "foo", "oo"), vec![None]),
+            ((vec![(0, 3)], "foo", "fo0o"), vec![Some((0, 4))]),
+        ]
+        .iter()
+        {
+            let (spans, text, original_text) = case;
+            assert_eq!(align_spans(spans, text, original_text), *expected);
+        }
+    }
+
+    #[test]
     fn align_spans_by_mapping_handmade() {
         for (case, expected) in vec![
             ((vec![], vec![]), vec![]),
@@ -116,7 +133,7 @@ mod tests {
                         vec![10],
                     ],
                 ),
-                vec![(1, 3), (6, 7), (9, 10)],
+                vec![vec![(1, 3)], vec![(6, 7), (9, 10)]],
             ),
         ]
         .iter()
@@ -129,13 +146,15 @@ mod tests {
     fn cases_align_spans_by_mapping(
         max_length: usize,
     ) -> impl Strategy<Value = ((usize, usize), Vec<Vec<usize>>)> {
-        pc::vec((0..4usize, 1..5usize), 0..max_length)
+        pc::vec((0..4usize, 0..5usize), 0..max_length)
             .prop_map(|v| {
                 v.iter()
                     .scan(0, |s, (d, n)| {
                         *s += d;
                         let v: Vec<_> = (*s..(*s + n)).collect();
-                        *s += n - 1;
+                        if *n > 0 {
+                            *s += n - 1;
+                        }
                         Some(v)
                     })
                     .collect()
@@ -146,14 +165,30 @@ mod tests {
             })
     }
 
-    fn check_align(span: Span, mapping: &[Vec<usize>], ret: &[Span]) {
+    fn check_align(span: Span, mapping: &[Vec<usize>], ret: &[Vec<Span>]) {
         let (start, end) = span;
         if start >= end {
-            assert_eq!(ret.len(), 0)
+            assert_eq!(ret[0], vec![])
         } else {
+            if ret[0].len() == 0 {
+                assert_eq!(mapping[start], vec![]);
+                assert_eq!(mapping[end - 1], vec![]);
+                return;
+            }
+            let mut cur = None;
+            for spans in ret {
+                for (start, end) in spans {
+                    if let Some(_cur) = cur {
+                        assert!(start - _cur > 0);
+                        cur = Some(end);
+                    }
+                    cur = Some(end);
+                }
+            }
             assert!(
                 ret.iter()
-                    .scan(None, |s, (start, end)| {
+                    .scan(None, |s, spans| {
+                        let (start, end) = span;
                         if let Some(ss) = s {
                             let ret = start - *ss;
                             *s = Some(end);
@@ -170,9 +205,9 @@ mod tests {
                 ret
             );
             let rev = |x: usize| mapping.iter().position(|y| y.contains(&x)).unwrap();
-            let l = rev(ret[0].0);
+            let l = rev(ret[0][0].0);
             assert!(
-                mapping[l].iter().any(|x| mapping[start].contains(&x)),
+                mapping[start].len() == 0 || mapping[l].iter().any(|x| mapping[start].contains(&x)),
                 "compare start.
                 ret: {:?}
                 l  : {}
@@ -180,20 +215,24 @@ mod tests {
                 ret,
                 l
             );
-            let mut r = rev(ret[0].1 - 1);
-            for i in 1..ret.len() {
-                assert!(
-                    mapping[r]
-                        .iter()
-                        .any(|x| mapping[rev(ret[i].0) - 1].contains(&x)),
-                    "continuity
+
+            let mut r = rev(ret[0][0].1 - 1);
+            for pret in ret {
+                for i in 1..pret.len() {
+                    assert!(
+                        mapping[r]
+                            .iter()
+                            .any(|x| mapping[rev(pret[i].0) - 1].contains(&x)),
+                        "continuity
                     ret: {:?}",
-                    ret
-                );
-                r = rev(ret[i].1 - 1);
+                        ret
+                    );
+                    r = rev(pret[i].1 - 1);
+                }
             }
             assert!(
-                mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
+                mapping[end - 1].len() == 0
+                    || mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
                 "compare end
             ret: {:?}
             r  : {}
@@ -205,7 +244,7 @@ mod tests {
     }
     proptest! {
           #[test]
-          fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(1000)) {
+          fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(3)) {
               let ret = align_spans_by_mapping(&vec![span], &mapping);
               check_align(span, &mapping, &ret);
           }
