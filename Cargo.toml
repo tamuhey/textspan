@@ -11,6 +11,7 @@ edition = "2018"
 tokenizations = "^0.3" 
 
 [dev-dependencies]
-quickcheck = "0.9"                     # Automatic property based testing with shrinking.
+quickcheck = "0.9"           
 quickcheck_macros = "0.9"  
 proptest = "0.10" 
+unicode-normalization = "0.1"

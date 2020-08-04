@@ -1,9 +1,9 @@
+#![deny(clippy::all)]
 #[cfg(test)]
 extern crate quickcheck;
 #[cfg(test)]
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
-use tokenizations;
 
 pub type Span = (usize, usize);
 fn substr(text: &str, start: usize, end: usize) -> &str {
@@ -28,25 +28,26 @@ pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Optio
     tokenizations::get_original_spans(&span_texts, original_text)
 }
 
-pub fn align_spans_by_mapping(spans: &[Span], mapping: &[usize]) -> Vec<Span> {
+pub fn align_spans_by_mapping(spans: &[Span], mapping: &Vec<Vec<usize>>) -> Vec<Span> {
     let mut ret = vec![];
     for &(start, end) in spans {
         let mut l = None;
         let mut r = None;
-        let mut prevy = None;
+        let mut prevy: Option<usize> = None;
         for i in start..end {
-            let y = mapping[i];
-            if prevy != None && prevy.unwrap() + 1 < y {
-                ret.push((l.unwrap(), r.unwrap()));
-                l = None;
-            } else {
-                r = Some(y + 1);
+            for &y in &mapping[i] {
+                if prevy != None && prevy.unwrap() + 1 < y {
+                    ret.push((l.unwrap(), r.unwrap()));
+                    l = None;
+                } else {
+                    r = Some(y + 1);
+                }
+                if l == None {
+                    l = Some(y);
+                    r = Some(y + 1);
+                }
+                prevy = Some(y);
             }
-            if l == None {
-                l = Some(y);
-                r = Some(y + 1);
-            }
-            prevy = Some(y);
         }
         if let Some(l) = l {
             ret.push((l, r.unwrap()));
@@ -103,7 +104,18 @@ mod tests {
         for (case, expected) in vec![
             ((vec![], vec![]), vec![]),
             (
-                (vec![(1, 3), (4, 6)], vec![0, 1, 2, 5, 6, 9, 10]),
+                (
+                    vec![(1, 3), (4, 6)],
+                    vec![
+                        vec![0],
+                        vec![1],
+                        vec![2],
+                        vec![5],
+                        vec![6],
+                        vec![9],
+                        vec![10],
+                    ],
+                ),
                 vec![(1, 3), (6, 7), (9, 10)],
             ),
         ]
@@ -116,40 +128,79 @@ mod tests {
 
     fn cases_align_spans_by_mapping(
         max_length: usize,
-    ) -> impl Strategy<Value = ((usize, usize), Vec<usize>)> {
-        pc::vec(0..4usize, 0..max_length)
+    ) -> impl Strategy<Value = ((usize, usize), Vec<Vec<usize>>)> {
+        pc::vec((0..4usize, 1..5usize), 0..max_length)
             .prop_map(|v| {
                 v.iter()
-                    .scan(0, |s, x| {
-                        *s += x;
-                        Some(*s)
+                    .scan(0, |s, (d, n)| {
+                        *s += d;
+                        let v: Vec<_> = (*s..(*s + n)).collect();
+                        *s += n - 1;
+                        Some(v)
                     })
                     .collect()
             })
-            .prop_flat_map(|v: Vec<usize>| {
+            .prop_flat_map(|v: Vec<Vec<usize>>| {
                 let l = v.len();
                 ((0..=l, 0..=l), Just(v))
             })
     }
-    fn check_align(span: Span, mapping: &[usize], ret: &[Span]) {
+
+    fn check_align(span: Span, mapping: &[Vec<usize>], ret: &[Span]) {
         let (start, end) = span;
         if start >= end {
             assert_eq!(ret.len(), 0)
         } else {
-            let rev = |x: usize| mapping.iter().position(|y| *y == x).unwrap();
+            assert!(
+                ret.iter()
+                    .scan(None, |s, (start, end)| {
+                        if let Some(ss) = s {
+                            let ret = start - *ss;
+                            *s = Some(end);
+                            Some(ret)
+                        } else {
+                            *s = Some(end);
+                            Some(100)
+                        }
+                    })
+                    .all(|x| x > 0),
+                "all ret spans are separated by more than 0
+                ret: {:?}
+                ",
+                ret
+            );
+            let rev = |x: usize| mapping.iter().position(|y| y.contains(&x)).unwrap();
             let l = rev(ret[0].0);
-            assert_eq!(mapping[l], mapping[start]);
+            assert!(
+                mapping[l].iter().any(|x| mapping[start].contains(&x)),
+                "compare start.
+                ret: {:?}
+                l  : {}
+                ",
+                ret,
+                l
+            );
             let mut r = rev(ret[0].1 - 1);
             for i in 1..ret.len() {
-                assert_eq!(
-                    mapping[r],
-                    mapping[rev(ret[i].0) - 1],
-                    "connectivity\n\tret: {:?}\n",
+                assert!(
+                    mapping[r]
+                        .iter()
+                        .any(|x| mapping[rev(ret[i].0) - 1].contains(&x)),
+                    "continuity
+                    ret: {:?}",
                     ret
                 );
                 r = rev(ret[i].1 - 1);
             }
-            assert_eq!(mapping[end - 1], mapping[r]);
+            assert!(
+                mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
+                "compare end
+            ret: {:?}
+            r  : {}
+            ",
+                ret,
+                r
+            );
         }
     }
     proptest! {
