@@ -68,57 +68,6 @@ mod tests {
     use proptest::collection as pc;
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
-    fn substr(text: &str, start: usize, end: usize) -> &str {
-        if start >= end {
-            return "";
-        }
-        let mut it = text.char_indices();
-        let l = it.nth(start).map(|(x, _)| x);
-        let r = it.nth(end - start - 1).map(|(x, _)| x);
-        match (l, r) {
-            (Some(l), Some(r)) => &text[l..r],
-            (Some(l), None) => &text[l..],
-            (None, _) => "",
-        }
-    }
-
-    fn slow_substr(text: &str, start: usize, end: usize) -> String {
-        if start >= end {
-            "".to_owned()
-        } else {
-            text.chars()
-                .skip(start)
-                .take(end - start)
-                .collect::<String>()
-        }
-    }
-    #[test]
-    fn substr_handmade() {
-        for &(case, expected) in vec![
-            (("今日はいい天気だ", 1, 4), "日はい"),
-            (("今日", 0, 10), "今日"),
-            (("明日はaaaどうだろうか", 2, 8), "はaaaどう"),
-            (("\u{0}", 1, 2), ""),
-        ]
-        .iter()
-        {
-            let (text, start, end) = case;
-            assert_eq!(substr(text, start, end), expected);
-            assert_eq!(substr(text, start, end), slow_substr(text, start, end));
-        }
-    }
-
-    #[quickcheck]
-    fn substr_quickcheck(text: String, start: usize, end: usize) {
-        let ret = substr(&text, start, end);
-        if start >= end {
-            assert_eq!(ret, "");
-        } else {
-            let expected = slow_substr(&text, start, end);
-            assert_eq!(ret, &expected);
-        }
-    }
-
     #[test]
     fn align_spans_handmade() {
         for (case, expected) in vec![
