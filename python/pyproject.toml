@@ -1,8 +1,12 @@
+[build-system]
+requires = [ "poetry>=1.0",]
+build-backend = "poetry.masonry.api"
+
 [tool.poetry]
 name = "textspan"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
-authors = ["Yohei Tamura <tamuhey@gmail.com>"]
+authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
 
 [tool.versionup]
@@ -17,7 +21,3 @@ python = ">=3.6"
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.1"
 hypothesis = "^5.23.11"
-
-[build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
