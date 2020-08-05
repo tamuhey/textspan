@@ -1,6 +1,6 @@
 [package]
 name = "textspan"
-version = "0.1.0"
+version = "0.2.0"
 license = "MIT"
 authors = ["Yohei Tamura <tamuhey@gmail.com>"]
 edition = "2018"
@@ -15,8 +15,7 @@ documentation = "https://docs.rs/textspan"
 
 [dependencies]
 
-# tokenizations = "^0.3" 
-tokenizations = {path="../tokenizations"}
+tokenizations = "^0.4" 
 
 [dev-dependencies]
 quickcheck = "0.9"           

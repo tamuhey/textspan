@@ -39,8 +39,8 @@ pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) 
         let mut r = None;
         let mut prevy: Option<usize> = None;
         let mut pret = vec![];
-        for i in start..end {
-            for &y in mapping[i].as_ref() {
+        for item in mapping.iter().take(end).skip(start) {
+            for &y in item.as_ref() {
                 if prevy != None && prevy.unwrap() + 1 < y {
                     pret.push((l.unwrap(), r.unwrap()));
                     l = None;
@@ -191,7 +191,7 @@ mod tests {
         if start >= end {
             assert_eq!(ret[0], vec![])
         } else {
-            if ret[0].len() == 0 {
+            if ret[0].is_empty() {
                 assert_eq!(mapping[start], vec![]);
                 assert_eq!(mapping[end - 1], vec![]);
                 return;
@@ -208,7 +208,7 @@ mod tests {
             let rev = |x: usize| mapping.iter().position(|y| y.contains(&x)).unwrap();
             let l = rev(ret[0][0].0);
             assert!(
-                mapping[start].len() == 0 || mapping[l].iter().any(|x| mapping[start].contains(&x)),
+                mapping[start].is_empty() || mapping[l].iter().any(|x| mapping[start].contains(&x)),
                 "compare start.
                 ret: {:?}
                 l  : {}
@@ -232,7 +232,7 @@ mod tests {
                 }
             }
             assert!(
-                mapping[end - 1].len() == 0
+                mapping[end - 1].is_empty()
                     || mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
                 "compare end
             ret: {:?}
@@ -246,7 +246,7 @@ mod tests {
     proptest! {
           #[test]
           fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(3)) {
-              let ret = align_spans_by_mapping(&vec![span], &mapping);
+              let ret = align_spans_by_mapping(&[span], &mapping);
               check_align(span, &mapping, &ret);
           }
     }
