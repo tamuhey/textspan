@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use textspanrs::Span;
+use textspan::Span;
 
 #[pymodule]
 fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -12,7 +12,7 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         text: &str,
         original_text: &str,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspanrs::align_spans(&spans, text, original_text))
+        Ok(textspan::align_spans(&spans, text, original_text))
     }
 
     #[pyfn(m, "align_spans_by_mapping")]
@@ -21,7 +21,7 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         spans: Vec<Span>,
         mapping: Vec<Vec<usize>>,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspanrs::align_spans_by_mapping(&spans, &mapping))
+        Ok(textspan::align_spans_by_mapping(&spans, &mapping))
     }
 
     #[pyfn(m, "get_original_spans")]
@@ -30,7 +30,7 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         tokens: Vec<&str>,
         original_text: &str,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspanrs::get_original_spans(&tokens, original_text))
+        Ok(textspan::get_original_spans(&tokens, original_text))
     }
 
     Ok(())
