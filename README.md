@@ -20,8 +20,7 @@ def get_original_spans(
 ```
 
 Returns the span indices of `original_text` from the tokens based on the shortest edit script (SES).
-
-This is useful, for example, when modifying the spans from normalized text to its original text position.
+This is useful, for example, when you get the spans in the original text of tokens obtained in the normalized text.
 
 ```python
 >>> import textspan
