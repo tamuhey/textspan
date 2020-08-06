@@ -1,8 +1,8 @@
 # Text span utility
 
 [![creates.io](https://img.shields.io/crates/v/textspan.svg)](https://crates.io/crates/textspan)
-[![pypi](https://img.shields.io/pypi/v/pytokenizations.svg)](https://pypi.org/project/pytokenizations/)
-[![Actions Status](https://github.com/tamuhey/textspan/workflows/Test/badge.svg)](https://github.com/tamuhey/textspan/actions)
+[![pypi](https://img.shields.io/pypi/v/pytextspan.svg)](https://pypi.org/project/pytextspan/)
+[![Action Status](https://github.com/tamuhey/textspan/workflows/Test%20and%20Deploy/badge.svg)](https://github.com/tamuhey/textspan/actions)
 
 - Rust doc: https://docs.rs/textspan
 
