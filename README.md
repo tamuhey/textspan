@@ -16,7 +16,7 @@ Install: `pip install pytextspan`
 ```python
 def get_original_spans(
     tokens: List[str], original_text: str,
-) -> List[List[Tuple[int, int]]]:
+) -> List[List[Tuple[int, int]]]: ...
 ```
 
 Returns the span indices of `original_text` from the tokens based on the shortest edit script (SES).
@@ -33,7 +33,7 @@ Returns the span indices of `original_text` from the tokens based on the shortes
 ```python
 def align_spans(
     spans: List[Tuple[int, int]], text: str, original_text: str,
-) -> List[List[Tuple[int, int]]]:
+) -> List[List[Tuple[int, int]]]: ...
 ```
 
 Converts the spans defined in `text` to those defined in `original_text`.
@@ -52,7 +52,7 @@ want the spans in original, unnormalized text.
 ```Python
 def align_spans_by_mapping(
     spans: List[Tuple[int, int]], mapping: List[List[int]],
-) -> List[List[Tuple[int, int]]]:
+) -> List[List[Tuple[int, int]]]: ...
 ```
 
 Converts the spans by the given `mapping`.
