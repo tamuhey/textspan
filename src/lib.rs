@@ -21,17 +21,59 @@ fn get_span_indices<S: Borrow<str>>(tokens: &[S]) -> Vec<Span> {
         .collect()
 }
 
+/// Returns the span indices of `original_text` from the tokens based on the
+/// shortest edit script (SES).
+///
+/// # Examples
+///
+/// ```
+/// let tokens = vec!["a", "la", "gorge"];
+/// let original_text = "à  LA    gorge";
+/// let spans = textspan::get_original_spans(&tokens, original_text);
+/// assert_eq!(spans, vec![vec![(0, 1)], vec![(3, 5)], vec![(9, 14)]]);
+/// ```
 pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> Vec<Vec<Span>> {
     let spans = get_span_indices(tokens);
     let text = tokens.join("");
     align_spans(&spans, &text, original_text)
 }
 
+/// Converts the spans defined in `text` to those defined in `original_text`.
+/// It is useful, for example, when you get the spans on normalized text but you
+/// want the spans in original, unnormalized text.
+///
+/// # Examples
+///
+/// ```
+/// let spans = [(0, 2), (3, 4)];
+/// let mapping = [vec![0, 1], vec![], vec![2], vec![4, 5, 6]];
+/// assert_eq!(
+///     textspan::align_spans_by_mapping(&spans, &mapping),
+///     [[(0, 2)], [(4, 7)]]
+/// )
+/// ```
 pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Vec<Span>> {
     let (mapping, _) = tokenizations::get_charmap(text, original_text);
     align_spans_by_mapping(spans, &mapping)
 }
 
+/// Converts the spans by the given `mapping`.
+/// Generally speaking, character correspondence between two texts is not
+/// necessarily surjective, not injective, not even a methematical map - some
+/// character in `textA` may not have a correspondence in `textB`, or may have
+/// multiple correspondences in `textB`. Thus, you should provide `mapping` as
+/// `Vec<Vec<Span>>`.
+///
+/// # Examples
+///
+/// ```
+/// let spans = [(0, 2), (3, 4)];
+/// let mapping = [vec![0, 1], vec![], vec![2], vec![4, 5, 6]];
+/// assert_eq!(
+///     textspan::align_spans_by_mapping(&spans, &mapping),
+///     [[(0, 2)], [(4, 7)]]
+/// )
+/// ```
 pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) -> Vec<Vec<Span>> {
     let mut ret = vec![];
     for &(start, end) in spans {
