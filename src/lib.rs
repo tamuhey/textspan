@@ -24,6 +24,9 @@ fn get_span_indices<S: Borrow<str>>(tokens: &[S]) -> Vec<Span> {
 /// Returns the span indices of `original_text` from the tokens based on the
 /// shortest edit script (SES).
 ///
+/// This is useful, for example, when modifying the spans from normalized text
+/// to its original text position.
+///
 /// # Examples
 ///
 /// ```
@@ -49,7 +52,7 @@ pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> 
 /// let text = "foobarbaz";
 /// let original_text = "FOo.BåR baZ";
 /// assert_eq!(
-///     textspan::align_spans(&spans, text,original_text),
+///     textspan::align_spans(&spans, text, original_text),
 ///     [[(0, 3)], [(4, 7)]]
 /// )
 /// ```

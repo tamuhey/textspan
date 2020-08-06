@@ -40,6 +40,8 @@ def get_original_spans(
 ) -> List[List[Tuple[int, int]]]:
     """Returns the span indices of `original_text` from the tokens based on the shortest edit script (SES).
 
+    This is useful, for example, when modifying the spans from normalized text to its original text position.
+
     Examples:
         >>> import textspan
         >>> tokens = ["foo", "bar"]
