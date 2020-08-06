@@ -45,11 +45,12 @@ pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> 
 /// # Examples
 ///
 /// ```
-/// let spans = [(0, 2), (3, 4)];
-/// let mapping = [vec![0, 1], vec![], vec![2], vec![4, 5, 6]];
+/// let spans = [(0, 3), (3, 6)];
+/// let text = "foobarbaz";
+/// let original_text = "FOo.BåR baZ";
 /// assert_eq!(
-///     textspan::align_spans_by_mapping(&spans, &mapping),
-///     [[(0, 2)], [(4, 7)]]
+///     textspan::align_spans(&spans, text,original_text),
+///     [[(0, 3)], [(4, 7)]]
 /// )
 /// ```
 pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Vec<Span>> {
