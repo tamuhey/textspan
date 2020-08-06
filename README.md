@@ -11,7 +11,7 @@
 
 Install: `pip install pytextspan`
 
-### get_original_spans
+### `get_original_spans`
 
 ```python
 def get_original_spans(
