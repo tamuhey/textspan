@@ -1,4 +1,4 @@
-# Text span utility
+# Text span utilities for Rust and Python
 
 [![creates.io](https://img.shields.io/crates/v/textspan.svg)](https://crates.io/crates/textspan)
 [![pypi](https://img.shields.io/pypi/v/pytextspan.svg)](https://pypi.org/project/pytextspan/)
