@@ -1,11 +1,12 @@
 from typing import List, Tuple
 
+
 def align_spans(
     spans: List[Tuple[int, int]], text: str, original_text: str,
 ) -> List[List[Tuple[int, int]]]:
     """Converts the spans defined in `text` to those defined in `original_text`.
 
-    This is useful, for example, when you get the spans in the original text of spans obtained in the normalized text.
+    This is useful, for example, when you want to get the spans in the original text of spans obtained in the normalized text.
 
     Examples:
         >>> spans = [(0, 2), (3, 4)]
@@ -14,6 +15,7 @@ def align_spans(
         [[(0, 2)], [(4, 7)]]
     """
     pass
+
 
 def align_spans_by_mapping(
     spans: List[Tuple[int, int]], mapping: List[List[int]],
@@ -34,12 +36,13 @@ def align_spans_by_mapping(
     """
     pass
 
+
 def get_original_spans(
     tokens: List[str], original_text: str,
 ) -> List[List[Tuple[int, int]]]:
     """Returns the span indices of `original_text` from the tokens based on the shortest edit script (SES).
 
-    This is useful, for example, when you get the spans in the original text of tokens obtained in the normalized text.
+    This is useful, for example, when you want to get the spans in the original text of tokens obtained in the normalized text.
 
     Examples:
         >>> import textspan

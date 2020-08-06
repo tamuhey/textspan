@@ -24,7 +24,7 @@ fn get_span_indices<S: Borrow<str>>(tokens: &[S]) -> Vec<Span> {
 /// Returns the span indices of `original_text` from the tokens based on the
 /// shortest edit script (SES).
 ///
-/// This is useful, for example, when you get the spans in the original text of
+/// This is useful, for example, when you want to get the spans in the original text of
 /// tokens obtained in the normalized text.
 ///
 /// # Examples
@@ -43,7 +43,7 @@ pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> 
 
 /// Converts the spans defined in `text` to those defined in `original_text`.
 ///
-/// This is useful, for example, when you get the spans in the original text of
+/// This is useful, for example, when you want to get the spans in the original text of
 /// spans obtained in the normalized text.
 ///
 /// # Examples
