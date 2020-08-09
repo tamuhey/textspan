@@ -251,20 +251,7 @@ mod tests {
                 l
             );
 
-            let mut r = rev(ret[0][0].1 - 1);
-            for pret in ret {
-                for i in 1..pret.len() {
-                    assert!(
-                        mapping[r]
-                            .iter()
-                            .any(|x| mapping[rev(pret[i].0) - 1].contains(&x)),
-                        "continuity
-                    ret: {:?}",
-                        ret
-                    );
-                    r = rev(pret[i].1 - 1);
-                }
-            }
+            let r = rev(ret[ret.len() - 1][ret[0].len() - 1].1 - 1);
             assert!(
                 mapping[end - 1].is_empty()
                     || mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
@@ -279,7 +266,7 @@ mod tests {
     }
     proptest! {
           #[test]
-          fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(3)) {
+          fn align_spans_by_mapping_proptest((span, mapping) in cases_align_spans_by_mapping(1000)) {
               let ret = align_spans_by_mapping(&[span], &mapping);
               check_align(span, &mapping, &ret);
           }
