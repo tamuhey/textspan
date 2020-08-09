@@ -33,5 +33,10 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         Ok(textspan::get_original_spans(&tokens, original_text))
     }
 
+    #[pyfn(m, "remove_span_overlaps")]
+    pub fn remove_span_overlaps(_py: Python, spans: Vec<Span>) -> PyResult<Vec<Span>> {
+        Ok(textspan::remove_span_overlaps(&spans))
+    }
+
     Ok(())
 }
