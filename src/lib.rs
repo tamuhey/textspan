@@ -24,8 +24,8 @@ fn get_span_indices<S: Borrow<str>>(tokens: &[S]) -> Vec<Span> {
 /// Returns the span indices of `original_text` from the tokens based on the
 /// shortest edit script (SES).
 ///
-/// This is useful, for example, when you want to get the spans in the original text of
-/// tokens obtained in the normalized text.
+/// This is useful, for example, when you want to get the spans in the original
+/// text of tokens obtained in the normalized text.
 ///
 /// # Examples
 ///
@@ -43,8 +43,8 @@ pub fn get_original_spans<S: Borrow<str>>(tokens: &[S], original_text: &str) -> 
 
 /// Converts the spans defined in `text` to those defined in `original_text`.
 ///
-/// This is useful, for example, when you want to get the spans in the original text of
-/// spans obtained in the normalized text.
+/// This is useful, for example, when you want to get the spans in the original
+/// text of spans obtained in the normalized text.
 ///
 /// # Examples
 ///
@@ -63,10 +63,10 @@ pub fn align_spans(spans: &[Span], text: &str, original_text: &str) -> Vec<Vec<S
 }
 
 /// Converts the spans by the given `mapping`.
-/// Generally speaking, character correspondence between two texts is not
+/// Generally speaking, the character correspondence between two texts is not
 /// necessarily surjective, not injective, not even a methematical map - some
 /// character in `textA` may not have a correspondence in `textB`, or may have
-/// multiple correspondences in `textB`. Thus, you should provide `mapping` as
+/// multiple correspondences in `textB`. Thus, `mapping` should be provided as
 /// `Vec<Vec<Span>>`.
 ///
 /// # Examples
@@ -109,12 +109,50 @@ pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) 
     ret
 }
 
+/// Remove overlapping spans from given `spans`.
+/// First, longest spans are remained - if the two spans are overlapped, the
+/// first span will be remained. If the two spans are overlapped and their start
+/// positions are same, the longer span will be remained.
+///
+/// # Example
+///
+/// ```
+/// use textspan::remove_overlap_spans;
+/// let spans = [(0, 2), (0, 3), (2, 4), (5, 7)];
+/// let ret = remove_overlap_spans(&spans);
+/// assert_eq!(ret, [(0, 3), (5, 7)]);
+/// ```
+pub fn remove_overlap_spans(spans: &[Span]) -> Vec<Span> {
+    let mut spans = spans.to_vec();
+    spans.sort_by_key(|x| (x.0, !0 - x.1)); // to take first longest spans
+    let mut ret = vec![];
+    let mut cur = 0;
+    for &(l, r) in &spans {
+        if l < cur {
+            continue;
+        }
+        ret.push((l, r));
+        cur = r;
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use proptest::collection as pc;
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
+    #[quickcheck]
+    fn remove_overlap_spans_quick(spans: Vec<Span>) {
+        let mut ret = remove_overlap_spans(&spans);
+        ret.sort();
+        let mut cur = 0;
+        for &(l, r) in &ret {
+            assert!(l >= cur);
+            cur = r;
+        }
+    }
     #[test]
     fn align_spans_handmade() {
         for (case, expected) in vec![
