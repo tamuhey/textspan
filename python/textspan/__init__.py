@@ -1,4 +1,4 @@
-from .textspan import (
+from textspan.textspan import (
     get_original_spans,
     align_spans_by_mapping,
     align_spans,

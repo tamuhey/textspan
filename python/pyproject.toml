@@ -16,11 +16,12 @@ files = [ "src/lib.rs", "Cargo.toml",]
 tag_prefix = "python/"
 
 [tool.poetry.dependencies]
-python = ">=3.6"
+python = "^3.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.1"
 hypothesis = "^5.23.11"
+pydoc-md = "^0.1.0"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-glob='*pyi'"
