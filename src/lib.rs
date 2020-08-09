@@ -117,12 +117,12 @@ pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) 
 /// # Example
 ///
 /// ```
-/// use textspan::remove_overlap_spans;
+/// use textspan::remove_span_overlaps;
 /// let spans = [(0, 2), (0, 3), (2, 4), (5, 7)];
-/// let ret = remove_overlap_spans(&spans);
+/// let ret = remove_span_overlaps(&spans);
 /// assert_eq!(ret, [(0, 3), (5, 7)]);
 /// ```
-pub fn remove_overlap_spans(spans: &[Span]) -> Vec<Span> {
+pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
     let mut spans = spans.to_vec();
     spans.sort_by_key(|x| (x.0, !0 - x.1)); // to take first longest spans
     let mut ret = vec![];
@@ -144,8 +144,8 @@ mod tests {
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
     #[quickcheck]
-    fn remove_overlap_spans_quick(spans: Vec<Span>) {
-        let mut ret = remove_overlap_spans(&spans);
+    fn remove_span_overlaps_quick(spans: Vec<Span>) {
+        let mut ret = remove_span_overlaps(&spans);
         ret.sort();
         let mut cur = 0;
         for &(l, r) in &ret {
