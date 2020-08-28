@@ -8,6 +8,8 @@ version = "0.3.0"
 description = ""
 authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
+[[tool.poetry.packages]]
+include = "textspan"
 
 [tool.versionup]
 tag = true
