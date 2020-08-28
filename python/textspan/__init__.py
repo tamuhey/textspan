@@ -11,4 +11,3 @@ __all__ = [
     "align_spans",
     "remove_span_overlaps",
 ]
-

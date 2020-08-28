@@ -39,7 +39,7 @@ def align_spans_by_mapping(spans: List[Tuple[int, int]], mapping: List[List[int]
 
 Converts the spans by the given `mapping`.
 
-Generally speaking, character correspondence between two texts is not
+Generally speaking, the character correspondence between two texts is not
 necessarily surjective, not injective, not even a methematical map -
 some character in `textA` may not have a correspondence in `textB`,
 or may have multiple correspondences in `textB`. Thus, you should
