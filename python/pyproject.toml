@@ -3,11 +3,13 @@ requires = [ "poetry>=1.0",]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry]
-name = "textspan"
+name = "pytextspan"
 version = "0.3.0"
 description = ""
 authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
+[[tool.poetry.packages]]
+include = "textspan"
 
 [tool.versionup]
 tag = true
