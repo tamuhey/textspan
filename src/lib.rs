@@ -265,7 +265,7 @@ mod tests {
                 }
             }
             let mut spans = remove_span_overlaps(&v);
-            spans.sort();
+            spans.sort_unstable();
             spans
         };
         let spans = sanitize(spans);
