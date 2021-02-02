@@ -159,7 +159,7 @@ pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
 /// assert_eq!(lift_span_index((0, 0), &[(0, 0)]), (1, 1));
 /// assert_eq!(lift_span_index((0, 0), &[]), (0, 0));
 pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
-    if target_spans.len() == 0 {
+    if target_spans.is_empty() {
         return (0, 0);
     }
     let (l, r) = span;
@@ -285,7 +285,7 @@ mod tests {
     #[quickcheck]
     fn remove_span_overlaps_quick(spans: Vec<Span>) {
         let mut ret = remove_span_overlaps(&spans);
-        ret.sort();
+        ret.sort_unstable();
         let mut cur = 0;
         for &(l, r) in &ret {
             assert!(l >= cur);
