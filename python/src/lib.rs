@@ -93,17 +93,24 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         Ok(textspan::remove_span_overlaps(&spans))
     }
 
-    /// Convert `char_span` indices to spans based indices given by `char_spans`.
-    /// Expected `char_spans` is sorted.
-    ///
     /// Examples:
     ///     >>> import textspan
     ///     >>> spans = [(0, 3), (3, 4), (4, 9), (9, 12)]
     ///     >>> assert textspan.lift_spans_index((2, 10), spans) == (0, 4)
+    #[pyfn(m, "lift_span_index")]
+    #[text_signature = "(span, target_spans)"]
+    pub fn lift_span_index(_py: Python, span: Span, target_spans: Vec<Span>) -> PyResult<Span> {
+        Ok(textspan::lift_span_index(span, &target_spans))
+    }
+
     #[pyfn(m, "lift_spans_index")]
-    #[text_signature = "(char_span, char_spans)"]
-    pub fn lift_spans_index(_py: Python, char_span: Span, char_spans: Vec<Span>) -> PyResult<Span> {
-        Ok(textspan::lift_spans_index(char_span, &char_spans))
+    #[text_signature = "(spans, target_spans)"]
+    pub fn lift_spans_index(
+        _py: Python,
+        spans: Vec<Span>,
+        target_spans: Vec<Span>,
+    ) -> PyResult<Vec<Span>> {
+        Ok(textspan::lift_spans_index(&spans, &target_spans))
     }
 
     Ok(())
