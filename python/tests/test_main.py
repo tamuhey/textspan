@@ -42,3 +42,11 @@ def test_random_get_original_spans(tokens, text):
 def test_random_get_original_spans(tokens, text, expected):
     ret = textspan.get_original_spans(tokens, text)
     assert ret == expected, (tokens, text)
+
+
+@pytest.mark.parametrize(
+    "char_span, char_spans, expected",
+    [((2, 10), [(0, 3), (3, 4), (4, 9), (9, 12)], (0, 4))],
+)
+def test_lift_spans_index(char_span, char_spans, expected):
+    assert textspan.lift_spans_index(char_span, char_spans) == expected

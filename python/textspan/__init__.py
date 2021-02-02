@@ -3,6 +3,7 @@ from textspan.textspan import (
     align_spans_by_mapping,
     align_spans,
     remove_span_overlaps,
+    lift_spans_index,
 )
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "align_spans_by_mapping",
     "align_spans",
     "remove_span_overlaps",
+    "lift_spans_index",
 ]
