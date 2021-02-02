@@ -137,47 +137,111 @@ pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
     ret
 }
 
-/// Convert `char_span` indices to spans based indices given by `char_spans`.
-/// Expected `char_spans` is sorted.
+/// Convert `char_span` indices to spans based indices given by `target_spans`.
+/// Expected `target_spans` is sorted.
+///
+/// # Example
+///
+/// ```
+/// use textspan::lift_span_index;
+/// let target_spans = [(0, 3), (3, 4), (4, 9), (9, 12)];
+/// assert_eq!(lift_span_index((0, 3), &target_spans), (0, 1));
+/// assert_eq!(lift_span_index((0, 4), &target_spans), (0, 2));
+/// assert_eq!(lift_span_index((1, 4), &target_spans), (0, 2));
+/// assert_eq!(lift_span_index((1, 5), &target_spans), (0, 3));
+/// assert_eq!(lift_span_index((1, 9), &target_spans), (0, 3));
+/// assert_eq!(lift_span_index((0, 9), &target_spans), (0, 3));
+/// assert_eq!(lift_span_index((1, 13), &target_spans), (0, 4));
+///
+/// let target_spans = [(3, 4), (4, 9), (9, 12)];
+/// assert_eq!(lift_span_index((0, 9), &target_spans), (0, 2));
+///
+/// assert_eq!(lift_span_index((0, 0), &[(0, 0)]), (1, 1));
+/// assert_eq!(lift_span_index((0, 0), &[]), (0, 0));
+pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
+    if target_spans.is_empty() {
+        return (0, 0);
+    }
+    let (l, r) = span;
+    // i = argmin(l < ri)
+    let li = {
+        if target_spans[0].1 > l {
+            0
+        } else {
+            let mut ok = target_spans.len();
+            let mut ng = 0;
+            while ok - ng > 1 {
+                let m = (ok + ng) / 2;
+                if target_spans[m].1 > l {
+                    ok = m;
+                } else {
+                    ng = m;
+                }
+            }
+            ok
+        }
+    };
+    // i = argmin(r <= l_i)
+    let ri = {
+        if target_spans[0].0 >= r {
+            0
+        } else {
+            let mut ok = target_spans.len();
+            let mut ng = 0;
+            while ok - ng > 1 {
+                let m = (ok + ng) / 2;
+                if target_spans[m].0 >= r {
+                    ok = m;
+                } else {
+                    ng = m;
+                }
+            }
+            ok
+        }
+    };
+    // in case of zero-length span
+    let ri = if ri < li { li } else { ri };
+    (li, ri)
+}
+
+/// Convert `spans` indices on `target_spans`
 ///
 /// # Example
 ///
 /// ```
 /// use textspan::lift_spans_index;
-/// let char_spans = [(0, 3), (3, 4), (4, 9), (9, 12)];
-/// assert_eq!(lift_spans_index((0, 3), &char_spans), (0, 1));
-/// assert_eq!(lift_spans_index((0, 4), &char_spans), (0, 2));
-/// assert_eq!(lift_spans_index((1, 4), &char_spans), (0, 2));
-/// assert_eq!(lift_spans_index((1, 5), &char_spans), (0, 3));
-/// assert_eq!(lift_spans_index((1, 9), &char_spans), (0, 3));
-/// assert_eq!(lift_spans_index((0, 9), &char_spans), (0, 3));
-/// assert_eq!(lift_spans_index((1, 13), &char_spans), (0, 4));
+/// let target_spans = [(3, 5), (5, 9), (11, 15)];
 ///
-/// let char_spans = [(3, 4), (4, 9), (9, 12)];
-/// assert_eq!(lift_spans_index((0, 9), &char_spans), (0, 2));
-pub fn lift_spans_index(char_span: Span, char_spans: &[Span]) -> Span {
-    let (l, r) = char_span;
-    let li = match char_spans.binary_search_by_key(&l, |x| x.0) {
-        Ok(i) => i,
-        Err(i) => {
-            if i > 0 {
-                i - 1
-            } else {
-                i
-            }
+/// assert_eq!(lift_spans_index(&[(3, 9)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(4, 9)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(4, 8)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(3, 8)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(0, 8)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(3, 10)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(3, 11)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(3, 12)], &target_spans), &[(0, 3)]);
+/// assert_eq!(lift_spans_index(&[(0, 16)], &target_spans), &[(0, 3)]);
+///
+/// assert_eq!(lift_spans_index(&[(0, 0)], &[(0, 0)]), &[(1, 1)]);
+/// ```
+pub fn lift_spans_index(spans: &[Span], target_spans: &[Span]) -> Vec<Span> {
+    let mut ret = vec![];
+    let mut cur = 0usize;
+    for &(l, r) in spans {
+        // i = argmin(l < ri)
+        while cur < target_spans.len() && target_spans[cur].1 <= l {
+            cur += 1;
         }
-    };
-    let ri = match char_spans.binary_search_by_key(&r, |x| x.1) {
-        Ok(i) => i + 1,
-        Err(i) => {
-            if i == char_spans.len() {
-                i
-            } else {
-                i + 1
-            }
+        let li = cur;
+        // i = argmin(r <= l_i)
+        let mut cur = cur;
+        while cur < target_spans.len() && target_spans[cur].0 < r {
+            cur += 1;
         }
-    };
-    (li, ri)
+        let ri = cur;
+        ret.push((li, ri));
+    }
+    ret
 }
 
 #[cfg(test)]
@@ -187,9 +251,41 @@ mod tests {
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
     #[quickcheck]
+    fn test_lift_spans_index(spans: Vec<Span>, target_spans: Vec<Span>) {
+        let sanitize = |spans: Vec<Span>| {
+            let mut v = vec![];
+            for (l, r) in spans {
+                if l == r {
+                    continue;
+                }
+                if l > r {
+                    v.push((r, l));
+                } else {
+                    v.push((l, r));
+                }
+            }
+            let mut spans = remove_span_overlaps(&v);
+            spans.sort_unstable();
+            spans
+        };
+        let spans = sanitize(spans);
+        let target_spans = sanitize(target_spans);
+        assert_eq!(
+            lift_spans_index(&spans, &target_spans),
+            spans
+                .iter()
+                .cloned()
+                .map(|span| lift_span_index(span, &target_spans))
+                .collect::<Vec<_>>(),
+            "\nspans: {:?}\ntarget_spans: {:?}\n",
+            spans,
+            target_spans
+        );
+    }
+    #[quickcheck]
     fn remove_span_overlaps_quick(spans: Vec<Span>) {
         let mut ret = remove_span_overlaps(&spans);
-        ret.sort();
+        ret.sort_unstable();
         let mut cur = 0;
         for &(l, r) in &ret {
             assert!(l >= cur);

@@ -39,7 +39,7 @@ def test_random_get_original_spans(tokens, text):
         (["hello", "``world``"], 'Hello "world"', [[(0, 5)], [(7, 12)]]),
     ],
 )
-def test_random_get_original_spans(tokens, text, expected):
+def test_random_get_original_spans2(tokens, text, expected):
     ret = textspan.get_original_spans(tokens, text)
     assert ret == expected, (tokens, text)
 
@@ -48,5 +48,13 @@ def test_random_get_original_spans(tokens, text, expected):
     "char_span, char_spans, expected",
     [((2, 10), [(0, 3), (3, 4), (4, 9), (9, 12)], (0, 4))],
 )
-def test_lift_spans_index(char_span, char_spans, expected):
-    assert textspan.lift_spans_index(char_span, char_spans) == expected
+def test_lift_span_index(char_span, char_spans, expected):
+    assert textspan.lift_span_index(char_span, char_spans) == expected
+
+
+@pytest.mark.parametrize(
+    "spans, target_spans, expected",
+    [([(2, 10)], [(0, 3), (3, 4), (4, 9), (9, 12)], [(0, 4)])],
+)
+def test_lift_spans_index(spans, target_spans, expected):
+    assert textspan.lift_spans_index(spans, target_spans) == expected
