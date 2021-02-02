@@ -137,6 +137,49 @@ pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
     ret
 }
 
+/// Convert `char_span` indices to spans based indices given by `char_spans`.
+/// Expected `char_spans` is sorted.
+///
+/// # Example
+///
+/// ```
+/// use textspan::lift_spans_index;
+/// let char_spans = [(0, 3), (3, 4), (4, 9), (9, 12)];
+/// assert_eq!(lift_spans_index((0, 3), &char_spans), (0, 1));
+/// assert_eq!(lift_spans_index((0, 4), &char_spans), (0, 2));
+/// assert_eq!(lift_spans_index((1, 4), &char_spans), (0, 2));
+/// assert_eq!(lift_spans_index((1, 5), &char_spans), (0, 3));
+/// assert_eq!(lift_spans_index((1, 9), &char_spans), (0, 3));
+/// assert_eq!(lift_spans_index((0, 9), &char_spans), (0, 3));
+/// assert_eq!(lift_spans_index((1, 13), &char_spans), (0, 4));
+///
+/// let char_spans = [(3, 4), (4, 9), (9, 12)];
+/// assert_eq!(lift_spans_index((0, 9), &char_spans), (0, 2));
+pub fn lift_spans_index(char_span: Span, char_spans: &[Span]) -> Span {
+    let (l, r) = char_span;
+    let li = match char_spans.binary_search_by_key(&l, |x| x.0) {
+        Ok(i) => i,
+        Err(i) => {
+            if i > 0 {
+                i - 1
+            } else {
+                i
+            }
+        }
+    };
+    let ri = match char_spans.binary_search_by_key(&r, |x| x.1) {
+        Ok(i) => i + 1,
+        Err(i) => {
+            if i == char_spans.len() {
+                i
+            } else {
+                i + 1
+            }
+        }
+    };
+    (li, ri)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
