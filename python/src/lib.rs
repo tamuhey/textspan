@@ -3,7 +3,7 @@ use textspan::Span;
 
 #[pymodule]
 fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add("__version__", "0.4.1")?;
+    m.add("__version__", "0.4.2")?;
 
     /// Converts the spans defined in `text` to those defined in `original_text`.
     ///
