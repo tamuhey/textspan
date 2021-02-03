@@ -227,7 +227,7 @@ pub fn lift_span_index(
 /// use textspan::lift_spans_index;
 /// let target_spans = [(3, 5), (5, 9), (11, 15)];
 ///
-/// assert_eq!(lift_spans_index(&[(3, 9)], &target_spans), &[(0, 2)]);
+/// assert_eq!(lift_spans_index(&[(3, 9)], &target_spans), &[(Ok(0), Ok(2))]);
 /// ```
 pub fn lift_spans_index(
     spans: &[Span],
