@@ -3,7 +3,7 @@ use textspan::Span;
 
 #[pymodule]
 fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add("__version__", "0.4.0")?;
+    m.add("__version__", "0.4.1")?;
 
     /// Converts the spans defined in `text` to those defined in `original_text`.
     ///
@@ -93,14 +93,26 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         Ok(textspan::remove_span_overlaps(&spans))
     }
 
+    fn to_tuple<T>(x: Result<T, T>) -> (T, bool) {
+        match x {
+            Ok(x) => (x, true),
+            Err(x) => (x, false),
+        }
+    }
+
     /// Examples:
     ///     >>> import textspan
     ///     >>> spans = [(0, 3), (3, 4), (4, 9), (9, 12)]
     ///     >>> assert textspan.lift_spans_index((2, 10), spans) == (0, 4)
     #[pyfn(m, "lift_span_index")]
     #[text_signature = "(span, target_spans)"]
-    pub fn lift_span_index(_py: Python, span: Span, target_spans: Vec<Span>) -> PyResult<Span> {
-        Ok(textspan::lift_span_index(span, &target_spans))
+    pub fn lift_span_index(
+        _py: Python,
+        span: Span,
+        target_spans: Vec<Span>,
+    ) -> PyResult<((usize, bool), (usize, bool))> {
+        let (l, r) = textspan::lift_span_index(span, &target_spans);
+        Ok((to_tuple(l), to_tuple(r)))
     }
 
     #[pyfn(m, "lift_spans_index")]
@@ -109,8 +121,11 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
         _py: Python,
         spans: Vec<Span>,
         target_spans: Vec<Span>,
-    ) -> PyResult<Vec<Span>> {
-        Ok(textspan::lift_spans_index(&spans, &target_spans))
+    ) -> PyResult<Vec<((usize, bool), (usize, bool))>> {
+        Ok(textspan::lift_spans_index(&spans, &target_spans)
+            .into_iter()
+            .map(|(l, r)| (to_tuple(l), to_tuple(r)))
+            .collect())
     }
 
     Ok(())

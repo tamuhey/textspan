@@ -137,36 +137,42 @@ pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
     ret
 }
 
-/// Convert `char_span` indices to spans based indices given by `target_spans`.
-/// Expected `target_spans` is sorted.
+/// Convert `span` indices to `target_spans` based indices.
+/// Expects `target_spans` is sorted and not overlapping.
 ///
 /// # Example
 ///
 /// ```
 /// use textspan::lift_span_index;
 /// let target_spans = [(0, 3), (3, 4), (4, 9), (9, 12)];
-/// assert_eq!(lift_span_index((0, 3), &target_spans), (0, 1));
-/// assert_eq!(lift_span_index((0, 4), &target_spans), (0, 2));
-/// assert_eq!(lift_span_index((1, 4), &target_spans), (0, 2));
-/// assert_eq!(lift_span_index((1, 5), &target_spans), (0, 3));
-/// assert_eq!(lift_span_index((1, 9), &target_spans), (0, 3));
-/// assert_eq!(lift_span_index((0, 9), &target_spans), (0, 3));
-/// assert_eq!(lift_span_index((1, 13), &target_spans), (0, 4));
+/// assert_eq!(lift_span_index((0, 3), &target_spans), (Ok(0), Ok(1)));
+/// assert_eq!(lift_span_index((0, 4), &target_spans), (Ok(0), Ok(2)));
+/// assert_eq!(lift_span_index((1, 4), &target_spans), (Err(0), Ok(2)));
+/// assert_eq!(lift_span_index((1, 5), &target_spans), (Err(0), Err(3)));
+/// assert_eq!(lift_span_index((1, 9), &target_spans), (Err(0), Ok(3)));
+/// assert_eq!(lift_span_index((0, 9), &target_spans), (Ok(0), Ok(3)));
+/// assert_eq!(lift_span_index((1, 13), &target_spans), (Err(0), Err(4)));
 ///
 /// let target_spans = [(3, 4), (4, 9), (9, 12)];
-/// assert_eq!(lift_span_index((0, 9), &target_spans), (0, 2));
+/// assert_eq!(lift_span_index((0, 9), &target_spans), (Err(0), Ok(2)));
 ///
-/// assert_eq!(lift_span_index((0, 0), &[(0, 0)]), (1, 1));
-/// assert_eq!(lift_span_index((0, 0), &[]), (0, 0));
-pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
+/// assert_eq!(lift_span_index((0, 0), &[(0, 0)]), (Ok(0), Ok(1)));
+/// assert_eq!(lift_span_index((0, 0), &[]), (Err(0), Err(0)));
+pub fn lift_span_index(
+    span: Span,
+    target_spans: &[Span],
+) -> (Result<usize, usize>, Result<usize, usize>) {
     if target_spans.is_empty() {
-        return (0, 0);
+        return (Err(0), Err(0));
     }
     let (l, r) = span;
-    // i = argmin(l < ri)
+    // i = max i where l >= ri-1
+    // if li == l Ok, else Err
     let li = {
-        if target_spans[0].1 > l {
-            0
+        if target_spans[0].0 == l {
+            Ok(0)
+        } else if target_spans[0].1 > l {
+            Err(0)
         } else {
             let mut ok = target_spans.len();
             let mut ng = 0;
@@ -178,13 +184,20 @@ pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
                     ng = m;
                 }
             }
-            ok
+            if ok < target_spans.len() && target_spans[ok].0 == l {
+                Ok(ok)
+            } else {
+                Err(ok)
+            }
         }
     };
-    // i = argmin(r <= l_i)
+    // i = min(r <= l_i)
+    // if ri-1 == r Ok, else Err
     let ri = {
-        if target_spans[0].0 >= r {
-            0
+        if target_spans[0].1 == r {
+            Ok(1)
+        } else if target_spans[0].0 >= r {
+            Err(0)
         } else {
             let mut ok = target_spans.len();
             let mut ng = 0;
@@ -196,11 +209,13 @@ pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
                     ng = m;
                 }
             }
-            ok
+            if ok > 0 && target_spans[ok - 1].1 == r {
+                Ok(ok)
+            } else {
+                Err(ok)
+            }
         }
     };
-    // in case of zero-length span
-    let ri = if ri < li { li } else { ri };
     (li, ri)
 }
 
@@ -212,19 +227,12 @@ pub fn lift_span_index(span: Span, target_spans: &[Span]) -> Span {
 /// use textspan::lift_spans_index;
 /// let target_spans = [(3, 5), (5, 9), (11, 15)];
 ///
-/// assert_eq!(lift_spans_index(&[(3, 9)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(4, 9)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(4, 8)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(3, 8)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(0, 8)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(3, 10)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(3, 11)], &target_spans), &[(0, 2)]);
-/// assert_eq!(lift_spans_index(&[(3, 12)], &target_spans), &[(0, 3)]);
-/// assert_eq!(lift_spans_index(&[(0, 16)], &target_spans), &[(0, 3)]);
-///
-/// assert_eq!(lift_spans_index(&[(0, 0)], &[(0, 0)]), &[(1, 1)]);
+/// assert_eq!(lift_spans_index(&[(3, 9)], &target_spans), &[(Ok(0), Ok(2))]);
 /// ```
-pub fn lift_spans_index(spans: &[Span], target_spans: &[Span]) -> Vec<Span> {
+pub fn lift_spans_index(
+    spans: &[Span],
+    target_spans: &[Span],
+) -> Vec<(Result<usize, usize>, Result<usize, usize>)> {
     let mut ret = vec![];
     let mut cur = 0usize;
     for &(l, r) in spans {
@@ -232,13 +240,21 @@ pub fn lift_spans_index(spans: &[Span], target_spans: &[Span]) -> Vec<Span> {
         while cur < target_spans.len() && target_spans[cur].1 <= l {
             cur += 1;
         }
-        let li = cur;
+        let li = if cur < target_spans.len() && target_spans[cur].0 == l {
+            Ok(cur)
+        } else {
+            Err(cur)
+        };
         // i = argmin(r <= l_i)
         let mut cur = cur;
         while cur < target_spans.len() && target_spans[cur].0 < r {
             cur += 1;
         }
-        let ri = cur;
+        let ri = if cur > 0 && target_spans[cur - 1].1 == r {
+            Ok(cur)
+        } else {
+            Err(cur)
+        };
         ret.push((li, ri));
     }
     ret
