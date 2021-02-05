@@ -71,6 +71,24 @@ original text of tokens obtained in the normalized text.
 [[(0, 2), (3, 4)], [(6, 9)]]
 ```
 
+### `lift_span_index`
+
+```python
+def lift_span_index(span: Tuple[int, int], target_spans: List[Tuple[int, int]]) -> Tuple[Tuple[int, bool], Tuple[int, bool]]: ...
+```
+
+Examples:
+
+>>> import textspan
+>>> spans = [(0, 3), (3, 4), (4, 9), (9, 12)]
+>>> assert textspan.lift_spans_index((2, 10), spans) == (0, 4)
+
+### `lift_spans_index`
+
+```python
+def lift_spans_index(spans: List[Tuple[int, int]], target_spans: List[Tuple[int, int]]) -> List[Tuple[Tuple[int, bool], Tuple[int, bool]]]: ...
+```
+
 ### `remove_span_overlaps`
 
 ```python
@@ -86,8 +104,25 @@ positions are same, the longer span will be remained.
 ```python
 >>> import textspan
 >>> spans = [(0, 2), (0, 3), (2, 4), (5, 7)]
->>> textspan.remove_span_overlaps(spans)
-[(0, 3), (5, 7)]
+>>> assert textspan.remove_span_overlaps(spans) == [(0, 3), (5, 7)]
+```
+
+### `remove_span_overlaps_idx`
+
+```python
+def remove_span_overlaps_idx(tokens: List[Tuple[int, int]]) -> List[int]: ...
+```
+
+Remove overlapping spans from given `spans`, and returns remained span indices.
+
+First, longest spans are remained - if the two spans are overlapped, the
+first span will be remained. If the two spans are overlapped and their start
+positions are same, the longer span will be remained.
+
+```python
+>>> import textspan
+>>> spans = [(0, 2), (0, 3), (2, 4), (5, 7)]
+>>> assert textspan.remove_span_overlaps_idx(spans) == [1, 3]
 ```
 
 
