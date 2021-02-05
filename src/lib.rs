@@ -137,6 +137,38 @@ pub fn remove_span_overlaps(spans: &[Span]) -> Vec<Span> {
     ret
 }
 
+/// Remove overlapping spans from given `spans`, and returns remained span indices.
+/// First, longest spans are remained - if the two spans are overlapped, the
+/// first span will be remained. If the two spans are overlapped and their start
+/// positions are same, the longer span will be remained.
+///
+/// # Example
+///
+/// ```
+/// use textspan::remove_span_overlaps_idx;
+/// let spans = [(0, 2), (0, 3), (2, 4), (5, 7)];
+/// let ret = remove_span_overlaps_idx(&spans);
+/// assert_eq!(ret, [1, 3]);
+/// ```
+pub fn remove_span_overlaps_idx(spans: &[Span]) -> Vec<usize> {
+    let mut indices: Vec<_> = (0..spans.len()).collect();
+    indices.sort_by_key(|&i| {
+        let (l, r) = spans[i];
+        (l, !0 - r)
+    });
+    let mut ret = vec![];
+    let mut cur = 0;
+    for i in indices {
+        let (l, r) = spans[i];
+        if l < cur {
+            continue;
+        }
+        ret.push(i);
+        cur = r;
+    }
+    ret
+}
+
 /// Convert `span` indices to `target_spans` based indices.
 /// Expects `target_spans` is sorted and not overlapping.
 ///
@@ -300,13 +332,15 @@ mod tests {
     }
     #[quickcheck]
     fn remove_span_overlaps_quick(spans: Vec<Span>) {
-        let mut ret = remove_span_overlaps(&spans);
-        ret.sort_unstable();
+        let new_spans = remove_span_overlaps(&spans);
         let mut cur = 0;
-        for &(l, r) in &ret {
+        for &(l, r) in &new_spans {
             assert!(l >= cur);
             cur = r;
         }
+        let indices = remove_span_overlaps_idx(&spans);
+        let new_spans2: Vec<_> = indices.into_iter().map(|i| spans[i]).collect();
+        assert_eq!(new_spans, new_spans2);
     }
     #[test]
     fn align_spans_handmade() {
