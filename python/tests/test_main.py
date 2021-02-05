@@ -51,3 +51,9 @@ def test_random_get_original_spans2(tokens, text, expected):
 def test_lift_span_index(span, spans, expected):
     assert textspan.lift_span_index(span, spans) == expected
     assert textspan.lift_spans_index([span], spans) == [expected]
+
+
+def test_remove_span_overlaps():
+    spans = [(0, 2), (0, 3), (2, 4), (5, 7)]
+    assert textspan.remove_span_overlaps(spans) == [(0, 3), (5, 7)]
+    assert textspan.remove_span_overlaps_idx(spans) == [1, 3]
