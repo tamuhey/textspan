@@ -1,17 +1,13 @@
-# [build-system]
-# requires = [ "poetry>=1.0",]
-# build-backend = "poetry.masonry.api"
 [build-system]
-requires = ["maturin"]
+requires = [ "maturin",]
 build-backend = "maturin"
 
 [tool.poetry]
 name = "pytextspan"
-version = "0.5.1"
+version = "0.5.2"
 description = ""
 authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
-
 [[tool.poetry.packages]]
 include = "textspan"
 
