@@ -46,7 +46,10 @@ def test_random_get_original_spans2(tokens, text, expected):
 
 @pytest.mark.parametrize(
     "span, spans, expected",
-    [((3, 10), [(0, 3), (3, 4), (4, 9), (9, 12)], ((1, True), (4, False)))],
+    [
+        ((3, 10), [(0, 3), (3, 4), (4, 9), (9, 12)], ((1, True), (4, False))),
+        ((0, 18), [(0, 13), (13, 18)], ((0, True), (2, True))),
+    ],
 )
 def test_lift_span_index(span, spans, expected):
     assert textspan.lift_span_index(span, spans) == expected
