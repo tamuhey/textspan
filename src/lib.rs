@@ -298,6 +298,7 @@ mod tests {
     use proptest::collection as pc;
     use proptest::prelude::*;
     use proptest::strategy::Strategy;
+    use rstest::*;
     #[quickcheck]
     fn test_lift_spans_index(spans: Vec<Span>, target_spans: Vec<Span>) {
         let sanitize = |spans: Vec<Span>| {
@@ -478,46 +479,43 @@ mod tests {
         spans == output
     }
 
-    #[test]
-    fn get_original_spans_handmade() {
-        let testcases = vec![
-            (
+    #[rstest(input, expected,
+            case(
                 (vec!["fあo①が", "bar"], "fあo1かbar"),
-                (vec![vec![(0, 5)], vec![(5, 8)]]),
+                vec![vec![(0, 5)], vec![(5, 8)]],
             ),
-            ((vec!["New York"], "NewYork"), (vec![vec![(0, 7)]])),
-            (
+            case((vec!["New York"], "NewYork"), vec![vec![(0, 7)]]),
+            case(
                 (vec!["A'B", "", ""], "A B"),
-                (vec![vec![(0, 1), (2, 3)], vec![], vec![]]),
+                vec![vec![(0, 1), (2, 3)], vec![], vec![]],
             ),
-            (
+            case(
                 (vec!["A'b", ""], "a b"),
-                (vec![vec![(0, 1), (2, 3)], vec![]]),
+                vec![vec![(0, 1), (2, 3)], vec![]],
             ),
-            ((vec!["", "", ""], ""), (vec![vec![], vec![], vec![]])),
-            (
+            case((vec!["", "", ""], ""), vec![vec![], vec![], vec![]]),
+            case(
                 (vec!["hello", "``world``"], "Hello \"world\""),
                 vec![vec![(0, 5)], vec![(7, 12)]],
             ),
-            (
+            case(
                 (vec!["à", " ", "", "la", "gorge", ""], "a     lagorge"),
-                (vec![
+                vec![
                     vec![(0, 1)],
-                    vec![(1, 2)],
+                    vec![(5, 6)],
                     vec![],
                     vec![(6, 8)],
                     vec![(8, 13)],
                     vec![],
-                ]),
+                ],
             ),
-        ];
-        for (input, expected) in testcases.into_iter() {
-            assert_eq!(
-                get_original_spans(&input.0, input.1),
-                expected,
-                "{:?}",
-                input
-            );
-        }
+             )]
+    fn hm_get_original_spans(input: (Vec<&str>, &str), expected: Vec<Vec<(usize, usize)>>) {
+        assert_eq!(
+            get_original_spans(&input.0, input.1),
+            expected,
+            "{:?}",
+            input
+        );
     }
 }

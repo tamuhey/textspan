@@ -15,9 +15,10 @@ documentation = "https://docs.rs/textspan"
 
 [dependencies]
 
-tokenizations = "0.4.1" 
+tokenizations = "0.4.2" 
 
 [dev-dependencies]
-quickcheck = "0.9"           
-quickcheck_macros = "0.9"  
-proptest = "0.10" 
+quickcheck = "1.0"           
+quickcheck_macros = "1.0"  
+proptest = "1.0" 
+rstest = "0.7.0"
