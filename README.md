@@ -79,9 +79,11 @@ def lift_span_index(span: Tuple[int, int], target_spans: List[Tuple[int, int]]) 
 
 Examples:
 
+```python
 >>> import textspan
 >>> spans = [(0, 3), (3, 4), (4, 9), (9, 12)]
 >>> assert textspan.lift_spans_index((2, 10), spans) == (0, 4)
+```
 
 ### `lift_spans_index`
 
