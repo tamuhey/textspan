@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use textspan::Span;
+use textspanrs::Span;
 
 #[pymodule]
 fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -18,15 +18,15 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> original_text = "FOo.BåR baZ";
     ///     >>> textspan.align_spans(spans, text, original_text)
     ///     [[(0, 3)], [(4, 7)]]
-    #[pyfn(m, "align_spans")]
-    #[text_signature = "(spans, text, original_text)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(spans, text, original_text)")]
     pub fn align_spans(
         _py: Python,
         spans: Vec<Span>,
         text: &str,
         original_text: &str,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspan::align_spans(&spans, text, original_text))
+        Ok(textspanrs::align_spans(&spans, text, original_text))
     }
 
     /// Converts the spans by the given `mapping`.
@@ -43,14 +43,14 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> mapping = [[0, 1], [], [2], [4, 5, 6]]
     ///     >>> textspan.align_spans_by_mapping(spans, mapping)
     ///     [[(0, 2)], [(4, 7)]]
-    #[pyfn(m, "align_spans_by_mapping")]
-    #[text_signature = "(spans, mapping)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(spans, mapping)")]
     pub fn align_spans_by_mapping(
         _py: Python,
         spans: Vec<Span>,
         mapping: Vec<Vec<usize>>,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspan::align_spans_by_mapping(&spans, &mapping))
+        Ok(textspanrs::align_spans_by_mapping(&spans, &mapping))
     }
 
     /// Returns the span indices of `original_text` from the tokens based on the shortest edit script (SES).
@@ -64,14 +64,14 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> textspan.get_original_spans(tokens, "FO.o  BåR")
     ///     [[(0, 2), (3, 4)], [(6, 9)]]
     ///
-    #[pyfn(m, "get_original_spans")]
-    #[text_signature = "(tokens, original_text)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(tokens, original_text)")]
     pub fn get_original_spans(
         _py: Python,
         tokens: Vec<&str>,
         original_text: &str,
     ) -> PyResult<Vec<Vec<Span>>> {
-        Ok(textspan::get_original_spans(&tokens, original_text))
+        Ok(textspanrs::get_original_spans(&tokens, original_text))
     }
 
     /// Remove overlapping spans from given `spans`.
@@ -86,10 +86,10 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> assert textspan.remove_span_overlaps(spans) == [(0, 3), (5, 7)]
     ///
     ///
-    #[pyfn(m, "remove_span_overlaps")]
-    #[text_signature = "(spans)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(spans)")]
     pub fn remove_span_overlaps(_py: Python, spans: Vec<Span>) -> PyResult<Vec<Span>> {
-        Ok(textspan::remove_span_overlaps(&spans))
+        Ok(textspanrs::remove_span_overlaps(&spans))
     }
 
     /// Remove overlapping spans from given `spans`, and returns remained span indices.
@@ -104,10 +104,10 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> assert textspan.remove_span_overlaps_idx(spans) == [1, 3]
     ///
     ///
-    #[pyfn(m, "remove_span_overlaps_idx")]
-    #[text_signature = "(spans)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(spans)")]
     pub fn remove_span_overlaps_idx(_py: Python, spans: Vec<Span>) -> PyResult<Vec<usize>> {
-        Ok(textspan::remove_span_overlaps_idx(&spans))
+        Ok(textspanrs::remove_span_overlaps_idx(&spans))
     }
 
     fn to_tuple<T>(x: Result<T, T>) -> (T, bool) {
@@ -121,25 +121,25 @@ fn textspan(_py: Python, m: &PyModule) -> PyResult<()> {
     ///     >>> import textspan
     ///     >>> spans = [(0, 3), (3, 4), (4, 9), (9, 12)]
     ///     >>> assert textspan.lift_spans_index((2, 10), spans) == (0, 4)
-    #[pyfn(m, "lift_span_index")]
-    #[text_signature = "(span, target_spans)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(span, target_spans)")]
     pub fn lift_span_index(
         _py: Python,
         span: Span,
         target_spans: Vec<Span>,
     ) -> PyResult<((usize, bool), (usize, bool))> {
-        let (l, r) = textspan::lift_span_index(span, &target_spans);
+        let (l, r) = textspanrs::lift_span_index(span, &target_spans);
         Ok((to_tuple(l), to_tuple(r)))
     }
 
-    #[pyfn(m, "lift_spans_index")]
-    #[text_signature = "(spans, target_spans)"]
+    #[pyfn(m)]
+    #[pyo3(text_signature = "(spans, target_spans)")]
     pub fn lift_spans_index(
         _py: Python,
         spans: Vec<Span>,
         target_spans: Vec<Span>,
     ) -> PyResult<Vec<((usize, bool), (usize, bool))>> {
-        Ok(textspan::lift_spans_index(&spans, &target_spans)
+        Ok(textspanrs::lift_spans_index(&spans, &target_spans)
             .into_iter()
             .map(|(l, r)| (to_tuple(l), to_tuple(r)))
             .collect())
