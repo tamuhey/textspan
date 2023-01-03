@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [tool.poetry]
 name = "pytextspan"
-version = "0.5.5"
+version = "0.5.6"
 description = ""
 authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
