@@ -54,7 +54,7 @@ jobs:
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/python/')
       working-directory: python
       run: |
-        maturin build --no-sdist --release --strip -i $PYTHON
+        maturin build --release --strip -i $PYTHON
         find target/ -type f -name "*whl" -exec $PYTHON -m auditwheel repair {} \;
 
     - name: Publish test pypi
