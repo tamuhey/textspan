@@ -22,7 +22,7 @@ python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2"
-hypothesis = "^5.23.11"
+hypothesis = "^6.61.0"
 pydoc-md = "^0.1.0"
 
 [tool.pytest.ini_options]

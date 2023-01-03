@@ -74,35 +74,36 @@ termcolor = "*"
 
 [[package]]
 name = "hypothesis"
-version = "5.49.0"
+version = "6.61.0"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "hypothesis-5.49.0-py3-none-any.whl", hash = "sha256:e91111f2f01abf2566041c4c86366aa7f08bfd5b3d858cc77a545fcf67df335e"},
-    {file = "hypothesis-5.49.0.tar.gz", hash = "sha256:36a4d5587c34193125d654b61bf9284e24a227d1edd339c49143378658a10c7d"},
+    {file = "hypothesis-6.61.0-py3-none-any.whl", hash = "sha256:7bb22d22e35db99d5724bbf5bdc686b46add94a0f228bf1be249c47ec46b9c7f"},
+    {file = "hypothesis-6.61.0.tar.gz", hash = "sha256:fbf7da30aea839d88898f74bcc027f0f997060498a8a7605880688c8a2166215"},
 ]
 
 [package.dependencies]
 attrs = ">=19.2.0"
+exceptiongroup = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 sortedcontainers = ">=2.1.0,<3.0.0"
 
 [package.extras]
-all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "django (>=2.2)", "dpcontracts (>=0.4)", "importlib-metadata", "importlib-resources (>=3.3.0)", "lark-parser (>=0.6.5)", "libcst (>=0.3.16)", "numpy (>=1.9.0)", "pandas (>=0.25)", "pytest (>=4.3)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "tzdata (>=2020.4)"]
-cli = ["black (>=19.10b0)", "click (>=7.0)"]
+all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "django (>=3.2)", "dpcontracts (>=0.4)", "importlib-metadata (>=3.6)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.9.0)", "pandas (>=1.0)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2022.7)"]
+cli = ["black (>=19.10b0)", "click (>=7.0)", "rich (>=9.0.0)"]
 codemods = ["libcst (>=0.3.16)"]
 dateutil = ["python-dateutil (>=1.4)"]
-django = ["django (>=2.2)", "pytz (>=2014.1)"]
+django = ["django (>=3.2)"]
 dpcontracts = ["dpcontracts (>=0.4)"]
 ghostwriter = ["black (>=19.10b0)"]
-lark = ["lark-parser (>=0.6.5)"]
+lark = ["lark (>=0.10.1)"]
 numpy = ["numpy (>=1.9.0)"]
-pandas = ["pandas (>=0.25)"]
-pytest = ["pytest (>=4.3)"]
+pandas = ["pandas (>=1.0)"]
+pytest = ["pytest (>=4.6)"]
 pytz = ["pytz (>=2014.1)"]
 redis = ["redis (>=3.0.0)"]
-zoneinfo = ["backports.zoneinfo (>=0.2.1)", "importlib-resources (>=3.3.0)", "tzdata (>=2020.4)"]
+zoneinfo = ["backports.zoneinfo (>=0.2.1)", "tzdata (>=2022.7)"]
 
 [[package]]
 name = "importlib-metadata"
@@ -326,4 +327,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "f4e2d05f411b999e79fff80c82c8064602cf147b85f886fb6238993631fae2a1"
+content-hash = "89365fe557cd87888c4381f25176c19c8bae28c217c89aaac2db05b33cc85f79"
