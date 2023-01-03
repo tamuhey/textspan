@@ -88,13 +88,13 @@ pub fn align_spans_by_mapping<T: AsRef<[usize]>>(spans: &[Span], mapping: &[T]) 
         let mut pret = vec![];
         for item in mapping.iter().take(end).skip(start) {
             for &y in item.as_ref() {
-                if prevy != None && prevy.unwrap() + 1 < y {
+                if prevy.is_some() && prevy.unwrap() + 1 < y {
                     pret.push((l.unwrap(), r.unwrap()));
                     l = None;
                 } else {
                     r = Some(y + 1);
                 }
-                if l == None {
+                if l.is_none() {
                     l = Some(y);
                     r = Some(y + 1);
                 }
@@ -432,7 +432,7 @@ mod tests {
             let rev = |x: usize| mapping.iter().position(|y| y.contains(&x)).unwrap();
             let l = rev(ret[0][0].0);
             assert!(
-                mapping[start].is_empty() || mapping[l].iter().any(|x| mapping[start].contains(&x)),
+                mapping[start].is_empty() || mapping[l].iter().any(|x| mapping[start].contains(x)),
                 "compare start.
                 ret: {:?}
                 l  : {}
@@ -444,7 +444,7 @@ mod tests {
             let r = rev(ret[ret.len() - 1][ret[0].len() - 1].1 - 1);
             assert!(
                 mapping[end - 1].is_empty()
-                    || mapping[end - 1].iter().any(|x| mapping[r].contains(&x)),
+                    || mapping[end - 1].iter().any(|x| mapping[r].contains(x)),
                 "compare end
             ret: {:?}
             r  : {}

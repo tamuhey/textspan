@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [tool.poetry]
 name = "pytextspan"
-version = "0.5.4"
+version = "0.5.5"
 description = ""
 authors = [ "Yohei Tamura <tamuhey@gmail.com>",]
 license = "MIT"
@@ -18,11 +18,11 @@ files = [ "src/lib.rs", "Cargo.toml",]
 tag_prefix = "python/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.0.1"
-hypothesis = "^5.23.11"
+pytest = "^7.2"
+hypothesis = "^6.61.0"
 pydoc-md = "^0.1.0"
 
 [tool.pytest.ini_options]
